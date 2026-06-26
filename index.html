@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Informe de Predicación</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:#faf7f2; --white:#fff; --navy:#1a2744;
+  --gold:#c9973a; --gold-light:#e8c97a;
+  --text:#2c2c2c; --text-light:#6b6b6b; --border:#ddd5c8;
+  --success:#2d7a50; --success-bg:#f0faf4;
+  --danger:#c0392b; --danger-bg:#fdf2f2;
+  --card-shadow:0 8px 40px rgba(26,39,68,.10);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --cream:#181c24; --white:#22283a; --navy:#e8c97a;
+    --gold:#e8c97a; --gold-light:#c9973a;
+    --text:#e8e4dc; --text-light:#9a9a9a; --border:#333d55;
+    --success:#4caf7d; --success-bg:#1a2e22;
+    --danger:#e05a4a; --danger-bg:#2e1a1a;
+    --card-shadow:0 8px 40px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--cream); font-family:'Lato',sans-serif;
+  min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  padding:24px 16px 60px;
+}
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:radial-gradient(circle at 20% 20%,rgba(201,151,58,.07) 0%,transparent 50%),
+             radial-gradient(circle at 80% 80%,rgba(26,39,68,.05) 0%,transparent 50%);
+}
+.page{display:none;width:100%;max-width:480px;position:relative;z-index:1;}
+.page.active{display:flex;flex-direction:column;}
+
+.header{text-align:center;margin-bottom:28px;animation:fadeDown .6s ease both;}
+.header-badge{
+  display:inline-block;background:var(--navy);color:var(--cream);
+  font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  padding:6px 16px;border-radius:2px;margin-bottom:12px;
+}
+@media(prefers-color-scheme:dark){.header-badge{background:#263660;color:var(--gold-light);}}
+.header h1{font-family:'Playfair Display',serif;font-size:28px;color:var(--navy);line-height:1.2;}
+.header p{color:var(--text-light);font-size:13px;margin-top:6px;font-weight:300;}
+
+.card{
+  background:var(--white);border-radius:16px;box-shadow:var(--card-shadow);
+  padding:28px 24px;border:1px solid rgba(201,151,58,.15);
+  animation:fadeUp .6s ease .1s both;
+}
+.section-label{
+  font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--border),transparent);}
+.divider{border:none;border-top:1px solid var(--border);margin:22px 0;}
+.field{margin-bottom:18px;}
+label{display:block;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--navy);margin-bottom:6px;}
+
+input[type=text],input[type=number],select,textarea{
+  width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:'Lato',sans-serif;font-size:15px;color:var(--text);
+  background:var(--cream);transition:border-color .2s,box-shadow .2s;
+  -webkit-appearance:none;appearance:none;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,151,58,.12);background:var(--white);
+}
+textarea{resize:vertical;min-height:80px;line-height:1.5;}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231a2744' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;
+}
+
+.checkbox-row{
+  display:flex;align-items:flex-start;gap:12px;padding:14px;
+  background:var(--cream);border-radius:10px;border:1.5px solid var(--border);
+  cursor:pointer;transition:border-color .2s;-webkit-tap-highlight-color:transparent;
+}
+.checkbox-row:hover{border-color:var(--gold);}
+.checkbox-row input[type=checkbox]{width:20px;height:20px;min-width:20px;accent-color:var(--navy);margin-top:2px;cursor:pointer;}
+.checkbox-row .check-text{font-size:14px;color:var(--text);line-height:1.45;user-select:none;}
+
+.tipo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.tipo-pill{
+  padding:10px 8px;border:1.5px solid var(--border);border-radius:8px;
+  text-align:center;font-size:12px;font-weight:700;color:var(--text-light);
+  cursor:pointer;transition:all .18s;background:var(--cream);
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+.tipo-pill.selected{background:var(--navy);color:#fff;border-color:var(--navy);}
+@media(prefers-color-scheme:dark){.tipo-pill.selected{background:#263660;}}
+
+.horas-section{display:none;animation:fadeUp .3s ease both;margin-top:14px;}
+.horas-section.visible{display:block;}
+
+.btn{
+  width:100%;padding:15px;border:none;border-radius:12px;
+  font-family:'Lato',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:9px;transition:transform .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent;
+}
+.btn:active{transform:scale(.97);}
+.btn-navy{background:var(--navy);color:#fff;box-shadow:0 4px 16px rgba(26,39,68,.25);margin-top:24px;}
+@media(prefers-color-scheme:dark){.btn-navy{background:#263660;}}
+.btn-outline{background:transparent;color:var(--navy);border:1.5px solid var(--border);margin-top:10px;font-size:13px;}
+
+.error-msg{color:var(--danger);font-size:12px;margin-top:4px;display:none;}
+input.error,select.error{border-color:var(--danger);}
+
+.success-box{
+  background:var(--success-bg);border:1.5px solid #a8d5b8;border-radius:12px;
+  padding:20px;text-align:center;margin-bottom:18px;
+}
+.success-box .icon{font-size:36px;margin-bottom:8px;}
+.success-box h2{font-family:'Playfair Display',serif;color:var(--success);font-size:20px;margin-bottom:4px;}
+.success-box p{font-size:13px;color:var(--success);}
+
+.spinner{
+  width:22px;height:22px;border:3px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.conn-err{background:var(--danger-bg);border:1px solid var(--danger);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--danger);margin-top:10px;text-align:center;display:none;}
+
+@keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- ══════════ FORMULARIO ══════════ -->
+<div class="page active" id="page-form">
+  <div class="header">
+    <div class="header-badge">S-4-S · Congregación</div>
+    <h1>Informe de<br>Predicación</h1>
+    <p>Completá el formulario y envialo</p>
+  </div>
+  <div class="card">
+    <div class="section-label">Datos personales</div>
+
+    <div class="field">
+      <label for="nombre">Nombre completo</label>
+      <input type="text" id="nombre" placeholder="Ej: García María" autocomplete="name" oninput="sugerirNombre(this.value)"/>
+      <div id="nombre-sugerencias" style="position:relative;"></div>
+      <div class="error-msg" id="err-nombre">Por favor ingresá tu nombre.</div>
+    </div>
+
+    <div class="field">
+      <label for="grupo">Grupo</label>
+      <select id="grupo">
+        <option value="">— Seleccioná tu grupo —</option>
+        <option value="Grupo 1">Grupo 1 — Gustavo Cáseres</option>
+        <option value="Grupo 2">Grupo 2 — Flavio Vanni</option>
+        <option value="Grupo 3">Grupo 3 — Daniel Gigena</option>
+        <option value="Grupo 4">Grupo 4 — Carlos Monferran</option>
+        <option value="Grupo 5">Grupo 5 — Osvaldo García</option>
+      </select>
+      <div class="error-msg" id="err-grupo">Por favor seleccioná tu grupo.</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="field">
+        <label for="mes">Mes</label>
+        <select id="mes">
+          <option value="">— Mes —</option>
+          <option>Enero</option><option>Febrero</option><option>Marzo</option>
+          <option>Abril</option><option>Mayo</option><option>Junio</option>
+          <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+          <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+        </select>
+        <div class="error-msg" id="err-mes">Seleccioná el mes.</div>
+      </div>
+      <div class="field">
+        <label for="anio">Año</label>
+        <select id="anio"></select>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="section-label">Participación</div>
+
+    <div class="field">
+      <label style="margin-bottom:10px;">¿Participaste en alguna faceta del ministerio?</label>
+      <label class="checkbox-row" for="participo">
+        <input type="checkbox" id="participo"/>
+        <span class="check-text">Sí, participé en alguna faceta de la predicación durante el mes</span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label for="cursos">Número de <em style="font-style:italic;font-weight:700;">diferentes</em> cursos bíblicos dirigidos</label>
+      <input type="number" id="cursos" placeholder="0" min="0" max="99"/>
+    </div>
+
+    <hr class="divider">
+    <div class="section-label">¿Sos precursor?</div>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:10px;">Tocá tu tipo si correspondés, o dejá sin seleccionar</p>
+    <div class="tipo-grid">
+      <div class="tipo-pill" data-tipo="Auxiliar"               onclick="toggleTipo(this)">Auxiliar</div>
+      <div class="tipo-pill" data-tipo="Regular"                onclick="toggleTipo(this)">Regular</div>
+      <div class="tipo-pill" data-tipo="Especial"               onclick="toggleTipo(this)">Especial</div>
+      <div class="tipo-pill" data-tipo="Misionero en el campo"  onclick="toggleTipo(this)">Misionero</div>
+    </div>
+    <div class="horas-section" id="horas-section">
+      <div class="field">
+        <label for="horas">Horas de predicación</label>
+        <input type="number" id="horas" placeholder="Ej: 60" min="1" max="744"/>
+        <div class="error-msg" id="err-horas">Por favor ingresá las horas.</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="section-label">Comentarios</div>
+    <div class="field">
+      <label for="comentarios">Observaciones (opcional)</label>
+      <textarea id="comentarios" placeholder="Escribí aquí si tenés algo para agregar…"></textarea>
+    </div>
+
+    <button class="btn btn-navy" id="btn-enviar" onclick="enviarFormulario()">
+      Enviar informe
+    </button>
+    <div class="conn-err" id="conn-err">⚠️ No se pudo guardar. Intentá de nuevo.</div>
+  </div>
+</div>
+
+<!-- ══════════ ENVIADO OK ══════════ -->
+<div class="page" id="page-ok">
+  <div class="header">
+    <div class="header-badge">S-4-S · Congregación</div>
+    <h1>Informe de<br>Predicación</h1>
+  </div>
+  <div class="card">
+    <div class="success-box">
+      <div class="icon">✅</div>
+      <h2>¡Informe enviado!</h2>
+      <p>Tu informe quedó registrado correctamente.</p>
+    </div>
+    <button class="btn btn-outline" onclick="nuevoInforme()">Cargar otro informe</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbxR5f7aPe-oC66bnPA8M-tgzhXQru-Ii0XqrvpAeOjdh_OMWygFzv2Pg2-6JHh-YmCMXg/exec';
+const STORAGE_KEY = 'ip_informes_v3';
+
+let tipoSeleccionado = '';
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+(function init(){
+  const ay = new Date().getFullYear();
+  const sel = document.getElementById('anio');
+  for(let y=ay; y>=ay-3; y--){
+    const o=document.createElement('option'); o.value=y; o.textContent=y;
+    if(y===ay) o.selected=true;
+    sel.appendChild(o);
+  }
+  const saved = localStorage.getItem('ip_last_nombre');
+  if(saved) document.getElementById('nombre').value = saved;
+  const savedGrupo = localStorage.getItem('ip_last_grupo');
+  if(savedGrupo) document.getElementById('grupo').value = savedGrupo;
+  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('mes').value = meses[new Date().getMonth()];
+})();
+
+// ═══════════════════════════════════════
+// NAVEGACIÓN
+// ═══════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function nuevoInforme(){
+  ['nombre','cursos','horas','comentarios'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('participo').checked=false;
+  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('mes').value=meses[new Date().getMonth()];
+  document.querySelectorAll('.tipo-pill').forEach(p=>p.classList.remove('selected'));
+  document.getElementById('horas-section').classList.remove('visible');
+  tipoSeleccionado='';
+  const s=localStorage.getItem('ip_last_nombre'); if(s) document.getElementById('nombre').value=s;
+  const g=localStorage.getItem('ip_last_grupo');  if(g) document.getElementById('grupo').value=g;
+  showPage('page-form');
+}
+
+// ═══════════════════════════════════════
+// TIPO PRECURSOR
+// ═══════════════════════════════════════
+function toggleTipo(el){
+  const ya=el.classList.contains('selected');
+  document.querySelectorAll('.tipo-pill').forEach(p=>p.classList.remove('selected'));
+  tipoSeleccionado='';
+  if(!ya){el.classList.add('selected');tipoSeleccionado=el.dataset.tipo;}
+  document.getElementById('horas-section').classList.toggle('visible',!!tipoSeleccionado);
+  if(!tipoSeleccionado) document.getElementById('err-horas').style.display='none';
+}
+
+// ═══════════════════════════════════════
+// AUTOCOMPLETAR
+// ═══════════════════════════════════════
+function sugerirNombre(val){
+  const wrap=document.getElementById('nombre-sugerencias'); wrap.innerHTML='';
+  if(val.length<2) return;
+  const nombres=[...new Set(getInformes().map(i=>i.nombre))];
+  const matches=nombres.filter(n=>n.toLowerCase().includes(val.toLowerCase())&&n.toLowerCase()!==val.toLowerCase());
+  if(!matches.length) return;
+  const box=document.createElement('div');
+  box.style.cssText='position:absolute;background:var(--white);border:1.5px solid var(--border);border-radius:8px;width:100%;z-index:10;box-shadow:0 4px 16px rgba(0,0,0,.1);margin-top:2px;';
+  matches.slice(0,5).forEach(n=>{
+    const d=document.createElement('div');
+    d.textContent=n;
+    d.style.cssText='padding:11px 14px;font-size:14px;cursor:pointer;color:var(--text);border-bottom:1px solid var(--border);';
+    d.onmousedown=()=>{document.getElementById('nombre').value=n;wrap.innerHTML='';};
+    box.appendChild(d);
+  });
+  wrap.appendChild(box);
+}
+
+// ═══════════════════════════════════════
+// STORAGE LOCAL (backup)
+// ═══════════════════════════════════════
+function getInformes(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch{return[];}}
+function saveInformes(l){localStorage.setItem(STORAGE_KEY,JSON.stringify(l));}
+function addInformeLocal(inf){const l=getInformes();l.push(inf);saveInformes(l);}
+
+// ═══════════════════════════════════════
+// ENVIAR A GOOGLE SHEETS
+// ═══════════════════════════════════════
+async function enviarASheets(informe){
+  try {
+    const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(informe) });
+    const data = await resp.json();
+    return data.ok === true;
+  } catch(e){ return false; }
+}
+
+// ═══════════════════════════════════════
+// ENVÍO FORMULARIO
+// ═══════════════════════════════════════
+async function enviarFormulario(){
+  let ok=true;
+  const nombre=document.getElementById('nombre').value.trim();
+  const grupo =document.getElementById('grupo').value;
+  const mes   =document.getElementById('mes').value;
+  const anio  =document.getElementById('anio').value;
+  const horas =document.getElementById('horas').value.trim();
+
+  const setErr=(eid,fid,show)=>{
+    document.getElementById(eid).style.display=show?'block':'none';
+    document.getElementById(fid).classList.toggle('error',show);
+  };
+  setErr('err-nombre','nombre',!nombre);
+  setErr('err-grupo','grupo',!grupo);
+  setErr('err-mes','mes',!mes);
+  if(!nombre||!grupo||!mes) ok=false;
+  if(tipoSeleccionado&&!horas){setErr('err-horas','horas',true);ok=false;}
+  else setErr('err-horas','horas',false);
+  if(!ok){document.querySelector('.error')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
+
+  localStorage.setItem('ip_last_nombre',nombre);
+  localStorage.setItem('ip_last_grupo',grupo);
+
+  const participo  =document.getElementById('participo').checked;
+  const cursos     =document.getElementById('cursos').value.trim()||'0';
+  const comentarios=document.getElementById('comentarios').value.trim();
+
+  const informe={
+    id:Date.now(),
+    fecha:new Date().toLocaleDateString('es-AR'),
+    nombre,grupo,mes,anio,participo,cursos,
+    tipo:tipoSeleccionado||null,
+    horas:tipoSeleccionado?horas:null,
+    comentarios,procesado:false
+  };
+
+  const btnEnviar=document.getElementById('btn-enviar');
+  btnEnviar.innerHTML='<div class="spinner"></div> Guardando…';
+  btnEnviar.disabled=true;
+
+  const sheetsOk = await enviarASheets(informe);
+  addInformeLocal(informe);
+
+  btnEnviar.innerHTML='Enviar informe';
+  btnEnviar.disabled=false;
+
+  if(!sheetsOk){
+    document.getElementById('conn-err').style.display='block';
+    return;
+  }
+
+  showPage('page-ok');
+}
+</script>
+</body>
+</html>
