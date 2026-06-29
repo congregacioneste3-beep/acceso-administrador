@@ -75,6 +75,16 @@ select{
   background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;
 }
 
+/* Input de contraseña con ojito */
+.pwd-wrap{position:relative;}
+.pwd-wrap input{padding-right:44px;}
+.pwd-toggle{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;font-size:18px;line-height:1;
+  padding:8px;color:var(--text-light);-webkit-tap-highlight-color:transparent;
+}
+.pwd-toggle:hover{color:var(--navy);}
+
 .btn{
   width:100%;padding:15px;border:none;border-radius:12px;
   font-family:'Lato',sans-serif;font-size:15px;font-weight:700;
@@ -169,32 +179,81 @@ input.error,select.error{border-color:var(--danger);}
 .modal-actions{display:flex;gap:8px;margin-top:16px;}
 .modal-actions .btn{margin-top:0;flex:1;}
 
+/* Sección publicadores del grupo */
+.pub-section{margin-bottom:20px;animation:fadeUp .5s ease .15s both;}
+.pub-toolbar{display:flex;gap:8px;margin-bottom:10px;}
+.pub-toolbar input{flex:1;font-size:13px;padding:9px 12px;}
+.pub-list{background:var(--white);border-radius:12px;border:1px solid var(--border);overflow:hidden;}
+.pub-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--border);gap:10px;}
+.pub-row:last-child{border-bottom:none;}
+.pub-nombre{font-size:14px;color:var(--text);flex:1;}
+.pub-status{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;}
+.pub-status.ok{background:var(--success-bg);color:var(--success);}
+.pub-status.falta{background:var(--danger-bg);color:var(--danger);}
+.pub-remove{background:none;border:none;color:var(--text-light);cursor:pointer;font-size:15px;padding:4px 6px;}
+.pub-remove:hover{color:var(--danger);}
+.pub-empty{text-align:center;padding:18px;color:var(--text-light);font-size:13px;}
+.pub-summary{font-size:12px;color:var(--text-light);margin-top:8px;text-align:center;}
+
 @keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
 
+<!-- ══════════ SELECCIÓN DE GRUPO ══════════ -->
+<div class="page active" id="page-select-grupo">
+  <div class="header">
+    <div class="header-badge">Administrador</div>
+    <h1>Panel de<br>Informes</h1>
+    <p>Seleccioná tu grupo para continuar</p>
+  </div>
+  <div class="card">
+    <div class="section-label">¿A quién representás?</div>
+    <div class="field">
+      <label for="select-grupo">Grupo / Rol</label>
+      <select id="select-grupo">
+        <option value="">— Seleccioná —</option>
+        <option value="Grupo 1">Grupo 1 — Gustavo Cáseres</option>
+        <option value="Grupo 2">Grupo 2 — Flavio Vanni</option>
+        <option value="Grupo 3">Grupo 3 — Daniel Gigena</option>
+        <option value="Grupo 4">Grupo 4 — Carlos Monferran</option>
+        <option value="Grupo 5">Grupo 5 — Osvaldo García</option>
+        <option value="Secretario">Secretario — Nahuel Martínez (ve todos los grupos)</option>
+      </select>
+      <div class="error-msg" id="err-select-grupo">Por favor seleccioná una opción.</div>
+    </div>
+    <button class="btn btn-navy" onclick="continuarConGrupo()">Continuar</button>
+  </div>
+</div>
+
 <!-- ══════════ SETUP ══════════ -->
-<div class="page active" id="page-setup">
+<div class="page" id="page-setup">
   <div class="header">
     <div class="header-badge">Primer acceso</div>
     <h1>Configurar<br>Contraseña</h1>
-    <p>Creá la contraseña de administrador</p>
+    <p id="setup-subtitle">Creá la contraseña de administrador</p>
   </div>
   <div class="card">
-    <div class="setup-info">👋 Es la primera vez que accedés al panel. Creá una contraseña segura — solo vos la sabrás. Mínimo 6 caracteres.</div>
+    <div class="setup-info">👋 Es la primera vez que accedés al panel para este grupo. Creá una contraseña segura — solo vos la sabrás. Mínimo 6 caracteres.</div>
     <div class="field">
       <label for="setup-pwd1">Nueva contraseña</label>
-      <input type="password" id="setup-pwd1" placeholder="••••••••" oninput="checkPwdStrength(this.value,'pwd-bar')"/>
+      <div class="pwd-wrap">
+        <input type="password" id="setup-pwd1" placeholder="••••••••" oninput="checkPwdStrength(this.value,'pwd-bar')"/>
+        <button type="button" class="pwd-toggle" onclick="togglePwd('setup-pwd1',this)" aria-label="Mostrar contraseña">👁️</button>
+      </div>
       <div class="pwd-strength"><div class="pwd-strength-bar" id="pwd-bar"></div></div>
     </div>
     <div class="field">
       <label for="setup-pwd2">Repetir contraseña</label>
-      <input type="password" id="setup-pwd2" placeholder="••••••••"/>
+      <div class="pwd-wrap">
+        <input type="password" id="setup-pwd2" placeholder="••••••••"/>
+        <button type="button" class="pwd-toggle" onclick="togglePwd('setup-pwd2',this)" aria-label="Mostrar contraseña">👁️</button>
+      </div>
       <div class="error-msg" id="err-setup">Las contraseñas no coinciden o son muy cortas.</div>
     </div>
     <button class="btn btn-navy" onclick="setupPassword()">Crear contraseña y entrar</button>
+    <button class="btn btn-outline" onclick="volverASeleccion()">← Cambiar grupo</button>
   </div>
 </div>
 
@@ -203,18 +262,22 @@ input.error,select.error{border-color:var(--danger);}
   <div class="header">
     <div class="header-badge">Administrador</div>
     <h1>Panel de<br>Informes</h1>
-    <p>Acceso restringido</p>
+    <p id="login-subtitle">Acceso restringido</p>
   </div>
   <div class="card">
     <div class="lockout-msg" id="lockout-msg"></div>
     <div class="section-label">Contraseña</div>
     <div class="field">
       <label for="pwd">Contraseña de administrador</label>
-      <input type="password" id="pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"/>
+      <div class="pwd-wrap">
+        <input type="password" id="pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"/>
+        <button type="button" class="pwd-toggle" onclick="togglePwd('pwd',this)" aria-label="Mostrar contraseña">👁️</button>
+      </div>
       <div class="error-msg" id="err-pwd">Contraseña incorrecta.</div>
       <div class="attempts-left" id="attempts-left"></div>
     </div>
     <button class="btn btn-navy" onclick="adminLogin()">Ingresar</button>
+    <button class="btn btn-outline" onclick="volverASeleccion()">← Cambiar grupo</button>
   </div>
 </div>
 
@@ -234,6 +297,18 @@ input.error,select.error{border-color:var(--danger);}
   </div>
   <div class="alert-banner" id="alert-banner"></div>
   <div class="stats-row" id="stats-row"></div>
+
+  <!-- Publicadores del grupo -->
+  <div class="pub-section">
+    <div class="section-label">Publicadores del grupo</div>
+    <div class="pub-toolbar">
+      <input type="text" id="pub-nuevo-nombre" placeholder="Agregar nombre…" onkeydown="if(event.key==='Enter')agregarPublicador()"/>
+      <button class="icon-btn" onclick="agregarPublicador()">+ Agregar</button>
+    </div>
+    <div class="pub-list" id="pub-list"></div>
+    <div class="pub-summary" id="pub-summary"></div>
+  </div>
+
   <div style="display:flex;gap:8px;margin-bottom:16px;justify-content:flex-end;">
     <button class="icon-btn" onclick="exportarCSV()">⬇ CSV</button>
     <button class="icon-btn" onclick="marcarTodosProcesados()">✅ Marcar todos</button>
@@ -293,17 +368,26 @@ input.error,select.error{border-color:var(--danger);}
     <h3>🔑 Cambiar contraseña</h3>
     <div class="field">
       <label for="cpwd-actual">Contraseña actual</label>
-      <input type="password" id="cpwd-actual" placeholder="••••••••"/>
+      <div class="pwd-wrap">
+        <input type="password" id="cpwd-actual" placeholder="••••••••"/>
+        <button type="button" class="pwd-toggle" onclick="togglePwd('cpwd-actual',this)" aria-label="Mostrar contraseña">👁️</button>
+      </div>
       <div class="error-msg" id="err-cpwd-actual">Contraseña incorrecta.</div>
     </div>
     <div class="field">
       <label for="cpwd-nueva">Nueva contraseña</label>
-      <input type="password" id="cpwd-nueva" placeholder="Mínimo 6 caracteres" oninput="checkPwdStrength(this.value,'pwd-bar2')"/>
+      <div class="pwd-wrap">
+        <input type="password" id="cpwd-nueva" placeholder="Mínimo 6 caracteres" oninput="checkPwdStrength(this.value,'pwd-bar2')"/>
+        <button type="button" class="pwd-toggle" onclick="togglePwd('cpwd-nueva',this)" aria-label="Mostrar contraseña">👁️</button>
+      </div>
       <div class="pwd-strength"><div class="pwd-strength-bar" id="pwd-bar2"></div></div>
     </div>
     <div class="field">
       <label for="cpwd-repite">Repetir nueva contraseña</label>
-      <input type="password" id="cpwd-repite" placeholder="••••••••"/>
+      <div class="pwd-wrap">
+        <input type="password" id="cpwd-repite" placeholder="••••••••"/>
+        <button type="button" class="pwd-toggle" onclick="togglePwd('cpwd-repite',this)" aria-label="Mostrar contraseña">👁️</button>
+      </div>
       <div class="error-msg" id="err-cpwd">Las contraseñas no coinciden o son muy cortas.</div>
     </div>
     <div class="modal-actions">
@@ -329,14 +413,16 @@ input.error,select.error{border-color:var(--danger);}
 // ═══════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════
-const STORAGE_KEY = 'ip_informes_v3';
+const SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbxCCHzWZenm_9hIwunnU5S3MC5MVWO-wW0w1C4nhCS2QG1KPEU8RBiSOOP0PPJ6Ftax6g/exec';
 const AUTH_KEY    = 'ip_auth_hash';
 const LOCK_KEY    = 'ip_lockout';
+const PUB_KEY     = 'ip_publicadores';
 const SESSION_MINS = 20;
 
 let sessionTimer = null;
 let sessionEnd = null;
 let deleteIdx = -1;
+let informesCache = [];
 
 // ═══════════════════════════════════════
 // INIT
@@ -349,8 +435,29 @@ let deleteIdx = -1;
     const o=document.createElement('option'); o.value=y; o.textContent=y;
     sel.appendChild(o);
   }
-  showPage(localStorage.getItem(AUTH_KEY) ? 'page-login' : 'page-setup');
+  showPage('page-select-grupo');
 })();
+
+let grupoActivo = '';
+
+function continuarConGrupo(){
+  const g = document.getElementById('select-grupo').value;
+  const err = document.getElementById('err-select-grupo');
+  if(!g){ err.style.display='block'; return; }
+  err.style.display='none';
+  grupoActivo = g;
+  const authKeyGrupo = AUTH_KEY + '_' + g.replace(/\s+/g,'');
+  const subtitle = g==='Secretario' ? 'Secretario — todos los grupos' : g;
+  document.getElementById('setup-subtitle').textContent = subtitle;
+  document.getElementById('login-subtitle').textContent = subtitle;
+  showPage(localStorage.getItem(authKeyGrupo) ? 'page-login' : 'page-setup');
+}
+
+function volverASeleccion(){
+  document.getElementById('pwd').value='';
+  document.getElementById('select-grupo').value=grupoActivo||'';
+  showPage('page-select-grupo');
+}
 
 // ═══════════════════════════════════════
 // NAVEGACIÓN
@@ -370,12 +477,135 @@ function showHistorial(){
 }
 
 // ═══════════════════════════════════════
-// STORAGE LOCAL
+// OJITO MOSTRAR/OCULTAR CONTRASEÑA
 // ═══════════════════════════════════════
-function getInformes(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch{return[];}}
-function saveInformes(l){localStorage.setItem(STORAGE_KEY,JSON.stringify(l));}
-function deleteInformeByIdx(idx){const l=getInformes();l.splice(idx,1);saveInformes(l);}
-function toggleProcesado(idx){const l=getInformes();if(l[idx])l[idx].procesado=!l[idx].procesado;saveInformes(l);}
+function togglePwd(inputId, btn){
+  const input = document.getElementById(inputId);
+  const oculto = input.type === 'password';
+  input.type = oculto ? 'text' : 'password';
+  btn.textContent = oculto ? '🙈' : '👁️';
+  btn.setAttribute('aria-label', oculto ? 'Ocultar contraseña' : 'Mostrar contraseña');
+}
+
+// ═══════════════════════════════════════
+// CARGA DESDE GOOGLE SHEETS
+// ═══════════════════════════════════════
+function getInformes(){ return informesCache; }
+
+async function cargarInformesDesdeSheets(){
+  const el = document.getElementById('informes-list');
+  el.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><p>Cargando informes…</p></div>';
+  try {
+    const grupoParam = grupoActivo === 'Secretario' ? 'Secretario' : grupoActivo;
+    const resp = await fetch(SCRIPT_URL + '?grupo=' + encodeURIComponent(grupoParam));
+    const data = await resp.json();
+    if(data.ok){
+      // Asignamos un id incremental para poder referenciarlos por índice
+      informesCache = data.informes.map((inf, i) => ({ ...inf, id: i, procesado: inf.procesado || false }));
+    } else {
+      el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Error al cargar: ' + data.error + '</p></div>';
+      return;
+    }
+  } catch(e){
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>No se pudo conectar con Google Sheets.</p></div>';
+    return;
+  }
+  renderAdmin();
+}
+
+// procesado y eliminado son solo visuales/locales (no se guarda en Sheets por ahora)
+function toggleProcesado(idx){ if(informesCache[idx]) informesCache[idx].procesado = !informesCache[idx].procesado; }
+function deleteInformeByIdx(idx){ informesCache.splice(idx, 1); }
+
+// ═══════════════════════════════════════
+// PUBLICADORES DEL GRUPO
+// ═══════════════════════════════════════
+function getPublicadoresMap(){try{return JSON.parse(localStorage.getItem(PUB_KEY)||'{}');}catch{return{};}}
+function savePublicadoresMap(m){localStorage.setItem(PUB_KEY,JSON.stringify(m));}
+
+// Para Secretario, toma el grupo elegido en el filtro; para un superintendente, su propio grupo.
+function grupoParaPublicadores(){
+  if(grupoActivo==='Secretario'){
+    return document.getElementById('filter-grupo').value || '';
+  }
+  return grupoActivo;
+}
+
+function getPublicadoresDeGrupo(grupo){
+  const m=getPublicadoresMap();
+  return (m[grupo]||[]).slice().sort((a,b)=>a.localeCompare(b,'es'));
+}
+
+function agregarPublicador(){
+  const grupo = grupoParaPublicadores();
+  if(!grupo){ alert('Elegí un grupo en el filtro antes de agregar publicadores.'); return; }
+  const input = document.getElementById('pub-nuevo-nombre');
+  const nombre = input.value.trim();
+  if(!nombre) return;
+  const m = getPublicadoresMap();
+  if(!m[grupo]) m[grupo]=[];
+  const yaExiste = m[grupo].some(n=>n.toLowerCase()===nombre.toLowerCase());
+  if(!yaExiste) m[grupo].push(nombre);
+  savePublicadoresMap(m);
+  input.value='';
+  renderPublicadores();
+}
+
+function quitarPublicador(grupo, nombre){
+  const m = getPublicadoresMap();
+  if(!m[grupo]) return;
+  m[grupo] = m[grupo].filter(n=>n!==nombre);
+  savePublicadoresMap(m);
+  renderPublicadores();
+}
+
+// Determina si un publicador ya tiene informe cargado para el mes/año filtrados (o el mes/año actual si no hay filtro)
+function publicadorYaEnvio(nombre, grupo, mesFil, anioFil){
+  const informes = getInformes();
+  return informes.some(i=>
+    i.nombre.toLowerCase()===nombre.toLowerCase() &&
+    i.grupo===grupo &&
+    (!mesFil  || i.mes===mesFil) &&
+    (!anioFil || String(i.anio)===String(anioFil))
+  );
+}
+
+function renderPublicadores(){
+  const listEl = document.getElementById('pub-list');
+  const summaryEl = document.getElementById('pub-summary');
+  const grupo = grupoParaPublicadores();
+
+  if(!grupo){
+    listEl.innerHTML = `<div class="pub-empty">Elegí un grupo en el filtro para ver sus publicadores.</div>`;
+    summaryEl.textContent = '';
+    return;
+  }
+
+  const mesFil  = document.getElementById('filter-mes').value;
+  const anioFil = document.getElementById('filter-anio-admin').value;
+  const publicadores = getPublicadoresDeGrupo(grupo);
+
+  if(!publicadores.length){
+    listEl.innerHTML = `<div class="pub-empty">Todavía no agregaste publicadores para ${grupo}.</div>`;
+    summaryEl.textContent = '';
+    return;
+  }
+
+  let enviaron = 0;
+  listEl.innerHTML = publicadores.map(nombre=>{
+    const ok = publicadorYaEnvio(nombre, grupo, mesFil, anioFil);
+    if(ok) enviaron++;
+    return `
+      <div class="pub-row">
+        <span class="pub-nombre">${nombre}</span>
+        <span class="pub-status ${ok?'ok':'falta'}">${ok?'✅ Enviado':'⏳ Falta'}</span>
+        <button class="pub-remove" title="Quitar de la lista" onclick="quitarPublicador('${grupo.replace(/'/g,"\\'")}','${nombre.replace(/'/g,"\\'")}')">×</button>
+      </div>`;
+  }).join('');
+
+  const periodo = (mesFil?mesFil:'todos los meses') + (anioFil?' '+anioFil:'');
+  summaryEl.textContent = `${enviaron} de ${publicadores.length} enviaron informe (${periodo}).`;
+}
 
 // ═══════════════════════════════════════
 // HASH
@@ -424,8 +654,9 @@ async function setupPassword(){
   const err=document.getElementById('err-setup');
   if(p1.length<6||p1!==p2){err.style.display='block';return;}
   err.style.display='none';
-  localStorage.setItem(AUTH_KEY,await hashPwd(p1));
-  startSession(); showPage('page-admin'); renderAdmin();
+  const authKeyGrupo = AUTH_KEY + '_' + grupoActivo.replace(/\s+/g,'');
+  localStorage.setItem(authKeyGrupo,await hashPwd(p1));
+  startSession(); showPage('page-admin'); aplicarFiltroGrupoFijo(); cargarInformesDesdeSheets();
 }
 
 // ═══════════════════════════════════════
@@ -435,12 +666,13 @@ async function adminLogin(){
   if(checkLockout()){showLockoutUI();return;}
   const pwd=document.getElementById('pwd').value;
   const h=await hashPwd(pwd);
-  if(h===localStorage.getItem(AUTH_KEY)){
+  const authKeyGrupo = AUTH_KEY + '_' + grupoActivo.replace(/\s+/g,'');
+  if(h===localStorage.getItem(authKeyGrupo)){
     document.getElementById('pwd').value='';
     document.getElementById('err-pwd').style.display='none';
     document.getElementById('attempts-left').style.display='none';
     saveLockout({});
-    startSession(); showPage('page-admin'); renderAdmin();
+    startSession(); showPage('page-admin'); aplicarFiltroGrupoFijo(); cargarInformesDesdeSheets();
   } else {
     const left=registerFailedAttempt();
     document.getElementById('err-pwd').style.display='block';
@@ -448,7 +680,20 @@ async function adminLogin(){
     else{const at=document.getElementById('attempts-left');at.textContent=`Intentos restantes: ${left}`;at.style.display='block';}
   }
 }
-function adminLogout(){clearInterval(sessionTimer);document.getElementById('pwd').value='';showPage('page-login');}
+function adminLogout(){clearInterval(sessionTimer);document.getElementById('pwd').value='';showPage('page-select-grupo');}
+
+function aplicarFiltroGrupoFijo(){
+  const filtroGrupo = document.getElementById('filter-grupo');
+  const adminTitle = document.querySelector('#page-admin .admin-header h2');
+  if(grupoActivo === 'Secretario'){
+    filtroGrupo.style.display = '';
+    adminTitle.textContent = '📋 Informes — Todos los grupos';
+  } else {
+    filtroGrupo.value = grupoActivo;
+    filtroGrupo.style.display = 'none';
+    adminTitle.textContent = `📋 Informes — ${grupoActivo}`;
+  }
+}
 
 // ═══════════════════════════════════════
 // SESIÓN
@@ -477,12 +722,13 @@ async function cambiarPassword(){
   const actual=document.getElementById('cpwd-actual').value;
   const nueva =document.getElementById('cpwd-nueva').value;
   const repite=document.getElementById('cpwd-repite').value;
+  const authKeyGrupo = AUTH_KEY + '_' + grupoActivo.replace(/\s+/g,'');
   const hActual=await hashPwd(actual);
-  if(hActual!==localStorage.getItem(AUTH_KEY)){document.getElementById('err-cpwd-actual').style.display='block';return;}
+  if(hActual!==localStorage.getItem(authKeyGrupo)){document.getElementById('err-cpwd-actual').style.display='block';return;}
   document.getElementById('err-cpwd-actual').style.display='none';
   if(nueva.length<6||nueva!==repite){document.getElementById('err-cpwd').style.display='block';return;}
   document.getElementById('err-cpwd').style.display='none';
-  localStorage.setItem(AUTH_KEY,await hashPwd(nueva));
+  localStorage.setItem(authKeyGrupo,await hashPwd(nueva));
   closeModal('modal-pwd');
   ['cpwd-actual','cpwd-nueva','cpwd-repite'].forEach(id=>document.getElementById(id).value='');
   alert('✅ Contraseña actualizada.');
@@ -496,21 +742,22 @@ function clearSearch(){document.getElementById('search-nombre').value='';documen
 
 function renderAdmin(){
   const busca   =document.getElementById('search-nombre').value.trim().toLowerCase();
-  const grupoFil=document.getElementById('filter-grupo').value;
+  const grupoFil=grupoActivo==='Secretario' ? document.getElementById('filter-grupo').value : grupoActivo;
   const mesFil  =document.getElementById('filter-mes').value;
   const anioFil =document.getElementById('filter-anio-admin').value;
   const tipoFil =document.getElementById('filter-tipo').value;
 
-  let lista=getInformes();
-  let base=lista;
+  let lista=informesCache.slice();
+  let base=lista.slice();
   if(mesFil)   base=base.filter(i=>i.mes===mesFil);
   if(anioFil)  base=base.filter(i=>String(i.anio)===String(anioFil));
   if(grupoFil) base=base.filter(i=>i.grupo===grupoFil);
 
   const alertEl=document.getElementById('alert-banner');
-  const faltantes=120-base.length;
+  const totalEsperado = grupoActivo==='Secretario' ? 120 : 24;
+  const faltantes=totalEsperado-base.length;
   if(faltantes>0&&base.length>0){
-    alertEl.textContent=`⚠️ Faltan aproximadamente ${faltantes} informes para llegar a los 120 publicadores${mesFil?' de '+mesFil:''}.`;
+    alertEl.textContent=`⚠️ Faltan aproximadamente ${faltantes} informes para llegar a los ${totalEsperado} publicadores${mesFil?' de '+mesFil:''}.`;
     alertEl.style.display='block';
   } else alertEl.style.display='none';
 
@@ -519,6 +766,8 @@ function renderAdmin(){
     <div class="stat-card"><div class="stat-num">${base.filter(i=>i.participo).length}</div><div class="stat-lbl">Participaron</div></div>
     <div class="stat-card"><div class="stat-num">${base.filter(i=>i.tipo).length}</div><div class="stat-lbl">Precursores</div></div>
   `;
+
+  renderPublicadores();
 
   if(busca)    lista=lista.filter(i=>i.nombre.toLowerCase().includes(busca));
   if(grupoFil) lista=lista.filter(i=>i.grupo===grupoFil);
@@ -529,12 +778,11 @@ function renderAdmin(){
   if(tipoFil==='procesado')  lista=lista.filter(i=>i.procesado);
   if(tipoFil==='pendiente')  lista=lista.filter(i=>!i.procesado);
 
-  const allInformes=getInformes();
   const el=document.getElementById('informes-list');
   if(!lista.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">📭</div><p>No hay informes con esos filtros.</p></div>`;return;}
 
   el.innerHTML=[...lista].reverse().map(inf=>{
-    const idx=allInformes.findIndex(i=>i.id===inf.id);
+    const idx=informesCache.findIndex(i=>i.id===inf.id);
     return `
     <div class="informe-card${inf.procesado?' procesado':''}">
       <div class="ic-top">
@@ -561,7 +809,7 @@ function renderAdmin(){
 }
 
 function procesarInforme(idx){toggleProcesado(idx);renderAdmin();}
-function marcarTodosProcesados(){const l=getInformes();l.forEach(i=>i.procesado=true);saveInformes(l);renderAdmin();}
+function marcarTodosProcesados(){informesCache.forEach(i=>i.procesado=true);renderAdmin();}
 
 function pedirDelete(idx){deleteIdx=idx;document.getElementById('modal-delete').classList.add('open');}
 function confirmarDelete(){if(deleteIdx>=0){deleteInformeByIdx(deleteIdx);deleteIdx=-1;}closeModal('modal-delete');renderAdmin();}
