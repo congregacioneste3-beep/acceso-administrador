@@ -501,7 +501,7 @@ async function cargarInformesDesdeSheets(){
     const data = await resp.json();
     if(data.ok){
       // Asignamos un id incremental para poder referenciarlos por índice
-      informesCache = data.informes.map((inf, i) => ({ ...inf, id: i, procesado: inf.procesado || false }));
+      informesCache = data.informes.map((inf, i) => ({ ...inf, id: i, procesado: inf.procesado || false, fecha: inf.fecha ? (()=>{ const d=new Date(inf.fecha); return isNaN(d)?inf.fecha:d.toLocaleDateString("es-AR"); })() : "", anio: String(inf.anio||"") }));
     } else {
       el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Error al cargar: ' + data.error + '</p></div>';
       return;
