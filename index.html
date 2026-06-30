@@ -413,15 +413,16 @@ input.error,select.error{border-color:var(--danger);}
 // ═══════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════
-const STORAGE_KEY = 'ip_informes_v3';
+const SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbxCCHzWZenm_9hIwunnU5S3MC5MVWO-wW0w1C4nhCS2QG1KPEU8RBiSOOP0PPJ6Ftax6g/exec';
 const AUTH_KEY    = 'ip_auth_hash';
 const LOCK_KEY    = 'ip_lockout';
-const PUB_KEY     = 'ip_publicadores'; // { "Grupo 1": ["Nombre1","Nombre2"], ... }
+const PUB_KEY     = 'ip_publicadores';
 const SESSION_MINS = 20;
 
 let sessionTimer = null;
 let sessionEnd = null;
 let deleteIdx = -1;
+let informesCache = [];
 
 // ═══════════════════════════════════════
 // INIT
@@ -487,12 +488,35 @@ function togglePwd(inputId, btn){
 }
 
 // ═══════════════════════════════════════
-// STORAGE LOCAL
+// CARGA DESDE GOOGLE SHEETS
 // ═══════════════════════════════════════
-function getInformes(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch{return[];}}
-function saveInformes(l){localStorage.setItem(STORAGE_KEY,JSON.stringify(l));}
-function deleteInformeByIdx(idx){const l=getInformes();l.splice(idx,1);saveInformes(l);}
-function toggleProcesado(idx){const l=getInformes();if(l[idx])l[idx].procesado=!l[idx].procesado;saveInformes(l);}
+function getInformes(){ return informesCache; }
+
+async function cargarInformesDesdeSheets(){
+  const el = document.getElementById('informes-list');
+  el.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><p>Cargando informes…</p></div>';
+  try {
+    const grupoParam = grupoActivo === 'Secretario' ? 'Secretario' : grupoActivo;
+    const resp = await fetch(SCRIPT_URL + '?grupo=' + encodeURIComponent(grupoParam));
+    const data = await resp.json();
+    if(data.ok){
+      // Asignamos un id incremental para poder referenciarlos por índice
+      informesCache = data.informes.map((inf, i) => ({ ...inf, id: i, procesado: inf.procesado || false, fecha: inf.fecha ? (()=>{ const d=new Date(inf.fecha); return isNaN(d)?inf.fecha:d.toLocaleDateString("es-AR"); })() : "", anio: String(inf.anio||"") }));
+    } else {
+      el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Error al cargar: ' + data.error + '</p></div>';
+      return;
+    }
+  } catch(e){
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>No se pudo conectar con Google Sheets.</p></div>';
+    return;
+  }
+  console.log('Cache cargado:', JSON.stringify(informesCache));
+  renderAdmin();
+}
+
+// procesado y eliminado son solo visuales/locales (no se guarda en Sheets por ahora)
+function toggleProcesado(idx){ if(informesCache[idx]) informesCache[idx].procesado = !informesCache[idx].procesado; }
+function deleteInformeByIdx(idx){ informesCache.splice(idx, 1); }
 
 // ═══════════════════════════════════════
 // PUBLICADORES DEL GRUPO
@@ -633,7 +657,7 @@ async function setupPassword(){
   err.style.display='none';
   const authKeyGrupo = AUTH_KEY + '_' + grupoActivo.replace(/\s+/g,'');
   localStorage.setItem(authKeyGrupo,await hashPwd(p1));
-  startSession(); showPage('page-admin'); aplicarFiltroGrupoFijo(); renderAdmin();
+  startSession(); showPage('page-admin'); aplicarFiltroGrupoFijo(); cargarInformesDesdeSheets();
 }
 
 // ═══════════════════════════════════════
@@ -649,7 +673,7 @@ async function adminLogin(){
     document.getElementById('err-pwd').style.display='none';
     document.getElementById('attempts-left').style.display='none';
     saveLockout({});
-    startSession(); showPage('page-admin'); aplicarFiltroGrupoFijo(); renderAdmin();
+    startSession(); showPage('page-admin'); aplicarFiltroGrupoFijo(); cargarInformesDesdeSheets();
   } else {
     const left=registerFailedAttempt();
     document.getElementById('err-pwd').style.display='block';
@@ -724,8 +748,8 @@ function renderAdmin(){
   const anioFil =document.getElementById('filter-anio-admin').value;
   const tipoFil =document.getElementById('filter-tipo').value;
 
-  let lista=getInformes();
-  let base=lista;
+  let lista=informesCache.slice();
+  let base=lista.slice();
   if(mesFil)   base=base.filter(i=>i.mes===mesFil);
   if(anioFil)  base=base.filter(i=>String(i.anio)===String(anioFil));
   if(grupoFil) base=base.filter(i=>i.grupo===grupoFil);
@@ -755,12 +779,11 @@ function renderAdmin(){
   if(tipoFil==='procesado')  lista=lista.filter(i=>i.procesado);
   if(tipoFil==='pendiente')  lista=lista.filter(i=>!i.procesado);
 
-  const allInformes=getInformes();
   const el=document.getElementById('informes-list');
   if(!lista.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">📭</div><p>No hay informes con esos filtros.</p></div>`;return;}
 
   el.innerHTML=[...lista].reverse().map(inf=>{
-    const idx=allInformes.findIndex(i=>i.id===inf.id);
+    const idx=informesCache.findIndex(i=>i.id===inf.id);
     return `
     <div class="informe-card${inf.procesado?' procesado':''}">
       <div class="ic-top">
@@ -787,7 +810,7 @@ function renderAdmin(){
 }
 
 function procesarInforme(idx){toggleProcesado(idx);renderAdmin();}
-function marcarTodosProcesados(){const l=getInformes();l.forEach(i=>i.procesado=true);saveInformes(l);renderAdmin();}
+function marcarTodosProcesados(){informesCache.forEach(i=>i.procesado=true);renderAdmin();}
 
 function pedirDelete(idx){deleteIdx=idx;document.getElementById('modal-delete').classList.add('open');}
 function confirmarDelete(){if(deleteIdx>=0){deleteInformeByIdx(deleteIdx);deleteIdx=-1;}closeModal('modal-delete');renderAdmin();}
