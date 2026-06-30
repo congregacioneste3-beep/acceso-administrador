@@ -510,6 +510,7 @@ async function cargarInformesDesdeSheets(){
     el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>No se pudo conectar con Google Sheets.</p></div>';
     return;
   }
+  console.log('Cache cargado:', JSON.stringify(informesCache));
   renderAdmin();
 }
 
