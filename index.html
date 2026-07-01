@@ -497,8 +497,11 @@ async function cargarInformesDesdeSheets(){
   el.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><p>Cargando informes…</p></div>';
   try {
     const grupoParam = grupoActivo === 'Secretario' ? 'Secretario' : grupoActivo;
-    const resp = await fetch(SCRIPT_URL + '?grupo=' + encodeURIComponent(grupoParam));
-    const data = await resp.json();
+    const targetUrl = SCRIPT_URL + '?grupo=' + encodeURIComponent(grupoParam);
+    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
+    const resp = await fetch(proxyUrl);
+    const proxyData = await resp.json();
+    const data = JSON.parse(proxyData.contents);
     if(data.ok){
       // Asignamos un id incremental para poder referenciarlos por índice
       informesCache = data.informes.map((inf, i) => ({ ...inf, id: i, procesado: inf.procesado || false, fecha: inf.fecha ? (()=>{ const d=new Date(inf.fecha); return isNaN(d)?inf.fecha:d.toLocaleDateString("es-AR"); })() : "", anio: String(inf.anio||"") }));
