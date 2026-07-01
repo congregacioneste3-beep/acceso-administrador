@@ -755,7 +755,7 @@ function renderAdmin(){
   let base=lista.slice();
   if(mesFil)   base=base.filter(i=>i.mes===mesFil);
   if(anioFil)  base=base.filter(i=>String(i.anio)===String(anioFil));
-  if(grupoFil) base=base.filter(i=>i.grupo===grupoFil);
+  if(grupoFil && grupoActivo==='Secretario') base=base.filter(i=>i.grupo===grupoFil);
 
   const alertEl=document.getElementById('alert-banner');
   const totalEsperado = grupoActivo==='Secretario' ? 120 : 24;
@@ -774,7 +774,8 @@ function renderAdmin(){
   renderPublicadores();
 
   if(busca)    lista=lista.filter(i=>i.nombre.toLowerCase().includes(busca));
-  if(grupoFil) lista=lista.filter(i=>i.grupo===grupoFil);
+  // Solo filtrar por grupo si es Secretario (los supers ya reciben solo su hoja)
+  if(grupoFil && grupoActivo==='Secretario') lista=lista.filter(i=>i.grupo===grupoFil);
   if(mesFil)   lista=lista.filter(i=>i.mes===mesFil);
   if(anioFil)  lista=lista.filter(i=>String(i.anio)===String(anioFil));
   if(tipoFil==='precursor')  lista=lista.filter(i=>i.tipo);
